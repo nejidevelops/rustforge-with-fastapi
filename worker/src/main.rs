@@ -23,4 +23,8 @@ fn main() {
     let sum: i32 = data.numbers.iter().sum();
 
     println!("{}", sum);
+
+    let average: f64 = sum as f64 / data.numbers.len() as f64;
+
+    println!("{}", average);
 }
