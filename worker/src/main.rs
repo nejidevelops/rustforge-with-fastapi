@@ -19,4 +19,8 @@ fn main() {
         .expect("Failed to parse json");
 
     println!("{:?}", data.numbers);
+
+    let sum: i32 = data.numbers.iter().sum();
+
+    println!("{}", sum);
 }
