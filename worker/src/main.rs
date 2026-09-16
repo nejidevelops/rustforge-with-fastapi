@@ -1,5 +1,5 @@
 use std::io::{self, Read};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 
 #[derive(Deserialize)]
@@ -7,10 +7,16 @@ struct Input {
     numbers: Vec<i32>,
 }
 
+#[derive(Serialize)]
+struct Output {
+    sum: i32,
+    average: f64,
+}
+
 fn calculate_average(numbers: &[i32]) -> Option<f64> {
     let sum: i32 = numbers.iter().sum();
 
-    if numbers.len() == 0 {
+    if numbers.is_empty() {
         return None
     }
 
@@ -29,10 +35,18 @@ fn main() {
     let data: Input = serde_json::from_str(&input)
     .expect("Failed to parse json");
 
-    let average = calculate_average(&data.numbers);
+    let sum: i32 = data.numbers.iter().sum();
 
-    match average {
-        Some(value) => println!("{}", value),
-        None => println!("There are no numbers to calculate average"),
-    }
+    let average = calculate_average(&data.numbers)
+        .expect("Cannot calculate average for empty numbers");
+
+    let result = Output {
+        sum,
+        average,
+    };
+
+    let output = serde_json::to_string(&result)
+        .expect("Failed to serialize output");
+
+    println!("{}", output)
 }
