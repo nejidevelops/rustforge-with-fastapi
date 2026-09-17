@@ -13,16 +13,21 @@ struct Output {
     average: f64,
 }
 
-fn calculate_average(numbers: &[i32]) -> Option<f64> {
+#[derive(Serialize)]
+struct ErrorOutput {
+    error: String
+}
+
+fn calculate_average(numbers: &[i32]) -> Result<f64, String> {
     let sum: i32 = numbers.iter().sum();
 
     if numbers.is_empty() {
-        return None
+        return Err("Cannot calculate average of empty numbers".to_string());
     }
 
     let average: f64 = sum as f64 / numbers.len() as f64;
 
-    Some(average)
+    Ok(average)
 }
 
 fn main() {
@@ -37,8 +42,20 @@ fn main() {
 
     let sum: i32 = data.numbers.iter().sum();
 
-    let average = calculate_average(&data.numbers)
-        .expect("Cannot calculate average for empty numbers");
+    let average = match calculate_average(&data.numbers) {
+        Ok(value) => value,
+        Err(error) => {
+            let error_output = ErrorOutput {
+                error,
+            };
+
+            let output = serde_json::to_string(&error_output)
+                .expect("Failed to serialize error");
+
+            println!("{}", output);
+            return;
+        }
+    };
 
     let result = Output {
         sum,
@@ -48,5 +65,5 @@ fn main() {
     let output = serde_json::to_string(&result)
         .expect("Failed to serialize output");
 
-    println!("{}", output)
+    println!("{}", output);
 }
