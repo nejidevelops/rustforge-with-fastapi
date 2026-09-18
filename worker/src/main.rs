@@ -60,5 +60,23 @@ fn main() {
     let data: Input = serde_json::from_str(&input)
       .expect("Failed to parse json");
 
-    process(&data);
+    match process(&data) {
+      Ok(result) => {
+        let output = serde_json::to_string(&result)
+          .expect("Failed to serialize output");
+
+        println!("{}", output);
+      }
+
+      Err(error) => {
+        let error_output = ErrorOutput {
+          error,
+        };
+
+        let output = serde_json::to_string(&error_output)
+          .expect("Failed to serialize error");
+
+        println!("{}", output)
+      }
+    }
 }
