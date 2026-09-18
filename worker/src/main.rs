@@ -37,46 +37,32 @@ fn calculate_average(numbers: &[i32]) -> Result<f64, String> {
 fn process(data: &Input) -> Result<Output, String> {
     let sum = calculate_sum(&data.numbers);
 
-    let average = match calculate_average(&data.numbers) {
-      Ok(value) => value,
-      Err(error) => return Err(error),
-    };
+    let average = calculate_average(&data.numbers)?;
 
     let result = Output {
       average,
-      sum
+      sum,
     };
 
     Ok(result)
 }
 
-fn main() {
+fn main() -> Result<(), String> {
     let mut input = String::new();
     
     io::stdin()
       .read_to_string(&mut input)
-      .expect("Failed to read input");
+      .map_err(|error| error.to_string())?;
     
     let data: Input = serde_json::from_str(&input)
-      .expect("Failed to parse json");
+      .map_err(|error| error.to_string())?;
 
-    match process(&data) {
-      Ok(result) => {
-        let output = serde_json::to_string(&result)
-          .expect("Failed to serialize output");
+    let result = process(&data)?;
 
-        println!("{}", output);
-      }
+    let output = serde_json::to_string(&result)
+      .map_err(|error| error.to_string())?;
 
-      Err(error) => {
-        let error_output = ErrorOutput {
-          error,
-        };
+    println!("{}", output);
 
-        let output = serde_json::to_string(&error_output)
-          .expect("Failed to serialize error");
-
-        println!("{}", output)
-      }
-    }
+    Ok(())
 }
