@@ -49,20 +49,59 @@ fn process(data: &Input) -> Result<Output, String> {
 
 fn main() -> Result<(), String> {
     let mut input = String::new();
-    
-    io::stdin()
-      .read_to_string(&mut input)
-      .map_err(|error| error.to_string())?;
-    
-    let data: Input = serde_json::from_str(&input)
-      .map_err(|error| error.to_string())?;
 
-    let result = process(&data)?;
+    if let Err(error) = io::stdin().read_to_string(&mut input) {
+      let output = ErrorOutput {
+        error: format!("Failed to read input: {}", error),
+      };
 
-    let output = serde_json::to_string(&result)
-      .map_err(|error| error.to_string())?;
+      println!(
+        "{}",
+        serde_json::to_string(&output)
+          .expect("Failed to serialize error")
+      );
 
-    println!("{}", output);
+      return Ok(());
+    }
+
+    let data: Input = match serde_json::from_str(&input) {
+      Ok(data) => data,
+
+      Err(error) => {
+        let output = ErrorOutput {
+          error: format!("Invalid JSON: {}", error),
+        };
+
+        println!(
+          "{}",
+          serde_json::to_string(&output)
+            .expect("Failed to serialize error")
+        );
+
+        return Ok(());
+      }
+    };
+
+    match process(&data) {
+        Ok(result) => {
+          let output = serde_json::to_string(&result)
+              .expect("Failed to serialize output");
+
+          println!("{}", output);
+        }
+
+        Err(error) => {
+            let output = ErrorOutput {
+                error,
+            };
+
+            println!(
+              "{}",
+              serde_json::to_string(&output)
+                .expect("Failed to serialize error")            
+            );
+        }
+    }
 
     Ok(())
 }
