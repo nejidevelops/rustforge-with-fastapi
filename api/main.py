@@ -1,8 +1,10 @@
 import subprocess
 import json
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+from config import RUST_WORKER
 
 app = FastAPI()
 
@@ -16,20 +18,40 @@ def root():
 @app.post("/calculate")
 def calculate(request: CalculationRequest):
   payload = {
-  "numbers": request.numbers
+    "numbers": request.numbers
   }
 
   json_input = json.dumps(payload)
 
-  print(json_input)
-
   result = subprocess.run(
-  ["../worker/target/debug/worker.exe"],
-  input=json_input,
-  text=True,
-  capture_output=True,
+    [str(RUST_WORKER)],
+    input=json_input,
+    text=True,
+    capture_output=True,
   )
 
-  output = json.loads(result.stdout)
+  if result.returncode != 0:
+    raise HTTPException(
+      status_code=500,
+      detail={
+        "message": "Rust worker failed",
+        "exit_code": result.returncode,
+        "stderr": result.stderr,
+      },
+    )
+
+  try:
+    output = json.loads(result.stdout)
+  except json.JSONDecodeError:
+    raise HTTPException(
+      status_code=500,
+      detail="Rust worker returned invalid JSON",
+    )
+
+  if "error" in output:
+    raise HTTPException(
+      status_code=400,
+      detail=output["error"],
+    )
 
   return output
