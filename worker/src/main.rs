@@ -91,14 +91,16 @@ fn main() -> Result<(), String> {
         }
 
         Err(error) => {
-            let output = ErrorOutput {
+            let error_output = ErrorOutput {
                 error,
             };
 
+            let output = serde_json::to_string(&error_output)
+              .expect("Failed to serialize error");         
+
             println!(
               "{}",
-              serde_json::to_string(&output)
-                .expect("Failed to serialize error")            
+              output
             );
         }
     }
