@@ -1,7 +1,6 @@
 use std::io::{self, BufRead, Write};
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Deserialize)]
 struct Input {
     numbers: Vec<i32>,
@@ -59,45 +58,50 @@ fn main() {
           eprintln!("Failed to read input {}", error);
           continue;
         }
-      }
-    }
+      };
 
-    let data: Input = match serde_json::from_str(&input) {
-      Ok(data) => data,
-
-      Err(error) => {
-        let output = ErrorOutput {
-          error: format!("Invalid JSON: {}", error),
-        };
-
-        println!(
-          "{}",
-          serde_json::to_string(&output)
-            .expect("Failed to serialize error")
-        );
-
-        io::stdout()
-          .flush()
-          .expect("Failed to flush stdout")
-
-        continue;
-      }
-    };
-
-    let output = match process(&data) {
-        Ok(result) => {
-          serde_json::to_string(&result)
-            .expect("Failed to serialize output");
-        }
-
+      let data: Input = match serde_json::from_str(&input) {
+        Ok(data) => data,
+  
         Err(error) => {
-            let error_output = ErrorOutput {
-                error,
-            };
-
-            serde_json::to_string(&error_output)
-              .expect("Failed to serialize error");         
+          let output = ErrorOutput {
+            error: format!("Invalid JSON: {}", error),
+          };
+  
+          println!(
+            "{}",
+            serde_json::to_string(&output)
+              .expect("Failed to serialize error")
+          );
+  
+          io::stdout()
+            .flush()
+            .expect("Failed to flush stdout");
+  
+          continue;
         }
+      };
+  
+      let output = match process(&data) {
+          Ok(result) => {
+            serde_json::to_string(&result)
+              .expect("Failed to serialize output")
+          }
+  
+          Err(error) => {
+              let error_output = ErrorOutput {
+                  error,
+              };
+  
+              serde_json::to_string(&error_output)
+                .expect("Failed to serialize error")       
+          }
+      };
+
+      println!("{}", output);
+
+      io::stdout()
+        .flush()
+        .expect("Failed to flush stdout");
     }
-    
 }
