@@ -1,30 +1,22 @@
-import json
-import subprocess
+from pathlib import Path
 
-worker = subprocess.Popen(
-  ["../worker/target/debug/worker.exe"],
-  stdin=subprocess.PIPE,
-  stdout=subprocess.PIPE,
-  stderr=subprocess.PIPE,
-  text=True,
+from worker import RustWorker
+
+RUST_WORKER = (
+  Path(__file__).resolve().parent
+  / ".."
+  / "worker"
+  / "target"
+  / "debug"
+  / "worker.exe"
 )
 
-jobs = [
-  {"numbers": [10, 20, 30, 40]},
-  {"numbers": [5, 10, 15]},
-  {"numbers": [100, 200, 300]},
-  {"numbers": []},
-]
+worker = RustWorker(RUST_WORKER)
 
-for job in jobs:
-  message = json.dumps(job)
+print(worker.calculate([10, 20, 30, 40]))
 
-  worker.stdin.write(message + "\n")
-  worker.stdin.flush()
+print(worker.calculate([5, 10, 15]))
 
-  response = worker.stdout.readline()
+print(worker.calculate([100, 200, 300]))
 
-  print("Rust", response.strip())
-
-worker.stdin.close()
-worker.wait()
+print(worker.calculate([]))
