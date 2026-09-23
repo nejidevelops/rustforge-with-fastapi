@@ -8,7 +8,7 @@ class WorkerPool:
 
     for _ in range(size):
       worker = RustWorker(worker_path)
-      self.workers.puts(worker)
+      self.workers.put(worker)
 
   def calculate(self, numbers):
     worker = self.workers.get()
