@@ -10,6 +10,7 @@ struct Input {
 struct Output {
     sum: i32,
     average: f64,
+    heavy_result: i64,
 }
 
 #[derive(Serialize)]
@@ -33,14 +34,33 @@ fn calculate_average(numbers: &[i32]) -> Result<f64, String> {
     Ok(average)
 }
 
+fn heavy_calculation(numbers: &[i32]) -> i64 {
+  let mut result: i64 = 0;
+
+  for number in numbers {
+    let value = *number as i64;
+
+    for i in 0..100_000 {
+      result = result.wrapping_add(
+        (value * i as i64) % 97
+      );
+    }
+  }
+
+  result
+} 
+
 fn process(data: &Input) -> Result<Output, String> {
     let sum = calculate_sum(&data.numbers);
 
     let average = calculate_average(&data.numbers)?;
 
+    let heavy_result = heavy_calculation(&data.numbers);
+
     let result = Output {
       average,
       sum,
+      heavy_result,
     };
 
     Ok(result)
