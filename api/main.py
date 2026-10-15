@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from config import RUST_WORKER
-from worker import WorkerPool
+from worker_pool import WorkerPool
 
 app = FastAPI()
 
